@@ -8,10 +8,6 @@ import path from "path";
 // import socketio from 'socket.io'
 
 const PORT = 5000;
-
-import express from 'express'
-import socketio from 'socket.io'
-import path from "path";
 let app = express()
 
 app.use(express.static(__dirname + '/public'));
