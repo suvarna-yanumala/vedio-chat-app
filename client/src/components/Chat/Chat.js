@@ -22,37 +22,37 @@ const Video = styled.video`
 `;
 
 const Chat = ({ location }) => {
-  const [name, setName] = useState("");
-  const [room, setRoom] = useState("");
-  const [email, setEmail] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [message, setmessage] = useState('');
-  const [messages, setmessages] = useState([]);
-  //  const [users, setUsers] = useState({});
-  const [users, setUsers] = useState([]);
-  const ENDPOINT = "localhost:5000"
+  const [name,setName] = useState("");
+  const [email,setEmail] = useState("");
+  const [mobile,setMobile] = useState("");
+  const [room,setRoom] = useState("");
   const [yourID, setYourID] = useState("");
+  const [users, setUsers] = useState({});
   const [stream, setStream] = useState();
   const [receivingCall, setReceivingCall] = useState(false);
   const [caller, setCaller] = useState("");
   const [callerSignal, setCallerSignal] = useState();
   const [callAccepted, setCallAccepted] = useState(false);
+  const ENDPOINT="localhost:5000"
 
   const userVideo = useRef();
   const partnerVideo = useRef();
   const socket = useRef();
 
   useEffect(() => {
-    const { name, room, email, mobile } = queryString.parse(location.search);
-    console.log("location searc", queryString.parse(location.search))
+    const {name, room,email,mobile} = queryString.parse(location.search);
+    setName(name)
+    setEmail(email)
+    setMobile(mobile)
+    setRoom(room)
     socket.current = io.connect(ENDPOINT);
-    setName(name);
-    setRoom(room);
-    setEmail(email);
-    setMobile(mobile);
-    console.log("socket running on tis port", socket)
-    socket.current.emit('join', { name, room, email, mobile }, () => {
-    });
+
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+      setStream(stream);
+      if (userVideo.current) {
+        userVideo.current.srcObject = stream;
+      }
+    })
     socket.current.on("yourID", (id) => {
       setYourID(id);
     })
@@ -67,6 +67,8 @@ const Chat = ({ location }) => {
       setCallerSignal(data.signal);
     })
   }, [ENDPOINT, location.search]);
+
+
   function acceptCall() {
     setCallAccepted(true);
     const peer = new Peer({
@@ -85,7 +87,6 @@ const Chat = ({ location }) => {
     peer.signal(callerSignal);
   }
   function callPeer(id) {
- 
     console.log("comes to te party")
     const peer = new Peer({
       initiator: true,
@@ -111,17 +112,6 @@ const Chat = ({ location }) => {
 
   }
 
-const allowVedio=()=>{
-  console.log("commit " )
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
-      setStream(stream);
-      if (userVideo.current) {
-        userVideo.current.srcObject = stream;
-      }
-    })
-
-}
-  
   let UserVideo;
   if (stream) {
     UserVideo = (
@@ -158,42 +148,23 @@ const allowVedio=()=>{
             <h3 style={{ marginLeft: '8px' }}>{name}</h3>
           </div>
           <div className="rightInnerContainer">
-            <a  onClick={allowVedio} style={{ marginRight: '8px' }}><img src={vedioIcon} alt="vedio image" /></a>
-            <a href="/"><img src={closeIcon} alt="close image" /></a>
+           <a href="/"><img src={closeIcon} alt="close image" /></a>
           </div>
         </div>
         <Row>
         {UserVideo}
         {PartnerVideo}
-       
       </Row>
-      {/* <Row>
-   
+      <Row>
         {Object.keys(users).map(key => {
           if (key === yourID) {
             return null;
           }
           return (
-            
-            <button onClick={() => callPeer(key)}>Call {key}</button>
+            <button onClick={() => callPeer(key)}>Call Aent<img src={vedioIcon} alt="vedio image" /></button>
           );
         })}
-      </Row> */}
-
-<Row>
-  {users.map((obj, index) => {
-  if (name=== obj.name) {
-    return null;
-  }else{
-    return (
-      // <a  onClick={() => callPeer(obj.id)} style={{ marginRight: '8px' }}><img src={vedioIcon} alt="vedio image" />Call {obj.name}</a>
-           
-      <button onClick={() => callPeer(obj.id)}>Call {obj.name}</button>
-    );
-  }
-  
-})}
- </Row>
+      </Row>
       <Row>
         {incomingCall}
       </Row>
